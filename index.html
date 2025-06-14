@@ -3,560 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MomentumMarketsFX - Trading Performance</title>
+    <title>MomentumMarketsFX Trading</title>
     
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <!-- SheetJS für Excel Export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
             padding: 20px;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-            border: 2px solid #e53e3e;
+            color: black;
+            border-radius: 10px;
+            padding: 20px;
         }
         
         .header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            background: #e53e3e;
             color: white;
-            padding: 25px 30px;
-            text-align: center;
-            position: relative;
-        }
-        
-        .main-title {
-            font-size: 1.8em;
-            color: #e53e3e;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin: 0 0 8px 0;
-        }
-        
-        .subtitle {
-            font-size: 0.9em;
-            color: #c0c0c0;
-            font-weight: 400;
-            margin: 0;
-        }
-        
-        .auth-section {
-            background: #f8f8f8;
-            padding: 25px;
-            border-bottom: 3px solid #e53e3e;
-            text-align: center;
-        }
-        
-        .admin-controls {
-            display: none;
-            background: #f0f8ff;
-            padding: 20px;
-            border-bottom: 2px solid #e53e3e;
-            text-align: center;
-        }
-        
-        .login-btn, .logout-btn, .export-btn {
-            background: linear-gradient(135deg, #e53e3e, #c53030);
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 1em;
-            margin: 0 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .login-btn:hover, .logout-btn:hover, .export-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
-        }
-        
-        .tabs {
-            display: flex;
-            background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-        }
-        
-        .tab {
-            flex: 1;
             padding: 20px;
             text-align: center;
-            cursor: pointer;
-            font-weight: 700;
-            color: #c0c0c0;
-            border-bottom: 4px solid transparent;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .tab:hover {
-            background: linear-gradient(135deg, #3d3d3d 0%, #2d2d2d 100%);
-            color: #e53e3e;
-        }
-        
-        .tab.active {
-            background: linear-gradient(135deg, #e53e3e, #c53030);
-            color: white;
-            border-bottom-color: #c53030;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 30px;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .form-section {
-            background: #f8f8f8;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border-left: 5px solid #e53e3e;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .form-section h3 {
-            color: #2d3748;
-            margin-bottom: 20px;
-            font-size: 1.3em;
-        }
-        
-        .form-row {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
+            border-radius: 10px;
             margin-bottom: 20px;
         }
         
-        .form-cell {
-            display: table-cell;
-            width: 16.666%;
-            padding-right: 15px;
-            vertical-align: top;
-        }
-        
-        .form-cell:last-child {
-            padding-right: 0;
-        }
-        
-        .form-cell label {
-            display: block;
-            font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 8px;
-            font-size: 0.9em;
-        }
-        
-        .form-cell input,
-        .form-cell select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1em;
-            height: 48px;
-            box-sizing: border-box;
-        }
-        
-        .form-cell input:focus,
-        .form-cell select:focus {
-            outline: none;
-            border-color: #e53e3e;
-            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+        .login-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
         }
         
         .btn {
-            background: linear-gradient(135deg, #e53e3e, #c53030);
+            background: #e53e3e;
             color: white;
-            padding: 15px 35px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 700;
-            font-size: 1.1em;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+            font-size: 16px;
+            margin: 10px;
         }
         
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(229, 62, 62, 0.4);
-            background: linear-gradient(135deg, #c53030, #e53e3e);
+            background: #c53030;
         }
         
-        .kpi-row {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
-            margin-bottom: 30px;
-        }
-        
-        .kpi-cell {
-            display: table-cell;
-            width: 16.666%;
-            padding-right: 15px;
-            vertical-align: top;
-        }
-        
-        .kpi-cell:last-child {
-            padding-right: 0;
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
         }
         
         .kpi-card {
-            background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+            background: #e53e3e;
             color: white;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 10px;
             text-align: center;
-            box-shadow: 0 6px 15px rgba(229, 62, 62, 0.3);
-            border: 2px solid #1a1a1a;
-            height: 100px;
+        }
+        
+        .kpi-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .form-section {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .form-group {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
         
-        .kpi-card h4 {
-            font-size: 0.75em;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            text-align: center;
-            line-height: 1.2;
-        }
-        
-        .kpi-card .value {
-            font-size: 1.8em;
+        .form-group label {
+            margin-bottom: 5px;
             font-weight: bold;
-            line-height: 1;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
         }
         
         th {
-            background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
-            color: #e53e3e;
-            padding: 18px 12px;
-            text-align: left;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid #e53e3e;
-        }
-        
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        
-        tr:hover {
-            background: #f7fafc;
-        }
-        
-        .profit {
-            color: #48bb78;
-            font-weight: 600;
-        }
-        
-        .loss {
-            color: #f56565;
-            font-weight: 600;
-        }
-        
-        .week-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f8f8;
-            border-radius: 12px;
-            border-left: 4px solid #e53e3e;
-        }
-        
-        .delete-btn {
-            background: #1a1a1a;
-            color: #e53e3e;
-            border: 2px solid #e53e3e;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .delete-btn:hover {
             background: #e53e3e;
             color: white;
         }
         
-        .user-info {
-            color: #2d3748;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
+        .profit { color: #28a745; font-weight: bold; }
+        .loss { color: #dc3545; font-weight: bold; }
         
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-        
-        .admin-only {
-            display: none;
-        }
-        
-        @media (max-width: 1200px) {
-            .form-row, .kpi-row {
-                display: block;
-            }
-            .form-cell, .kpi-cell {
-                display: block;
-                width: 100%;
-                margin-bottom: 15px;
-                padding-right: 0;
-            }
-        }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="main-title">MomentumMarketsFX</h1>
-            <p class="subtitle">Professional Forex Analytics Dashboard</p>
+            <h1>MomentumMarketsFX</h1>
+            <p>Professional Trading Dashboard</p>
         </div>
         
-        <div class="auth-section">
-            <div id="loginSection">
-                <p style="margin-bottom: 15px; color: #666;">Admins können sich anmelden um Trades einzugeben</p>
-                <button class="login-btn" onclick="signInWithGoogle()">🔐 Admin Login</button>
+        <div class="login-section">
+            <div id="loginArea">
+                <p>Admin-Login für Trade-Eingabe</p>
+                <button class="btn" onclick="loginWithGoogle()">Google Login</button>
             </div>
-            <div id="userSection" style="display: none;">
-                <div class="user-info">
-                    <span id="userName"></span>
+            <div id="userArea" class="hidden">
+                <p>Angemeldet als: <span id="userName"></span></p>
+                <button class="btn" onclick="logout()">Abmelden</button>
+                <button class="btn" onclick="showTradeForm()">Trade eingeben</button>
+            </div>
+        </div>
+        
+        <!-- Public Dashboard -->
+        <div id="publicDashboard">
+            <h2>Trading Performance</h2>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <h3>Gesamt Trades</h3>
+                    <div class="kpi-value" id="totalTrades">0</div>
                 </div>
-                <button class="logout-btn" onclick="signOut()">Abmelden</button>
-                <button class="export-btn" onclick="exportToExcel()">Excel Export</button>
-            </div>
-        </div>
-        
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('public')">📊 Öffentliche Ansicht</div>
-            <div class="tab admin-only" onclick="switchTab('input')">✏️ Trade Eingabe</div>
-            <div class="tab admin-only" onclick="switchTab('manage')">👥 Admin Verwaltung</div>
-        </div>
-        
-        <!-- Öffentliche Ansicht -->
-        <div id="public" class="tab-content active">
-            <div class="form-section">
-                <h3>🎯 Trading Performance</h3>
-                <div class="kpi-row">
-                    <div class="kpi-cell">
-                        <div class="kpi-card">
-                            <h4>Gesamt Trades</h4>
-                            <div class="value" id="totalTrades">0</div>
-                        </div>
-                    </div>
-                    <div class="kpi-cell">
-                        <div class="kpi-card">
-                            <h4>Winning Trades</h4>
-                            <div class="value" id="totalWins">0</div>
-                        </div>
-                    </div>
-                    <div class="kpi-cell">
-                        <div class="kpi-card">
-                            <h4>Hit Rate</h4>
-                            <div class="value" id="totalHitRate">0%</div>
-                        </div>
-                    </div>
-                    <div class="kpi-cell">
-                        <div class="kpi-card">
-                            <h4>Gesamt Pips</h4>
-                            <div class="value" id="totalPips">0</div>
-                        </div>
-                    </div>
-                    <div class="kpi-cell">
-                        <div class="kpi-card">
-                            <h4>Ø Pips/Trade</h4>
-                            <div class="value" id="avgPips">0</div>
-                        </div>
-                    </div>
-                    <div class="kpi-cell">
-                        <div class="kpi-card">
-                            <h4>Bester Trade</h4>
-                            <div class="value" id="bestTrade">0</div>
-                        </div>
-                    </div>
+                <div class="kpi-card">
+                    <h3>Winning Trades</h3>
+                    <div class="kpi-value" id="winningTrades">0</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Hit Rate</h3>
+                    <div class="kpi-value" id="hitRate">0%</div>
+                </div>
+                <div class="kpi-card">
+                    <h3>Gesamt Pips</h3>
+                    <div class="kpi-value" id="totalPips">0</div>
                 </div>
             </div>
             
-            <div class="form-section">
-                <h3>📈 Trade Historie</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Datum</th>
-                            <th>KW</th>
-                            <th>Paar</th>
-                            <th>Typ</th>
-                            <th>Einstieg</th>
-                            <th>Ausstieg</th>
-                            <th>Stop Loss</th>
-                            <th>Pips</th>
-                            <th>Ergebnis</th>
-                        </tr>
-                    </thead>
-                    <tbody id="publicTradesTable">
-                    </tbody>
-                </table>
-            </div>
-            
-            <div id="weeklyAnalysisPublic"></div>
-            
-            <div class="form-section">
-                <h3>💰 Profit Simulation (1% Risk pro Trade)</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Kontogröße</th>
-                            <th>Risk pro Trade</th>
-                            <th>Profit/Loss (€)</th>
-                            <th>Neuer Kontostand (€)</th>
-                            <th>ROI (%)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="profitTablePublic">
-                    </tbody>
-                </table>
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Paar</th>
+                        <th>Typ</th>
+                        <th>Einstieg</th>
+                        <th>Ausstieg</th>
+                        <th>Pips</th>
+                        <th>Ergebnis</th>
+                    </tr>
+                </thead>
+                <tbody id="tradesTable">
+                </tbody>
+            </table>
         </div>
         
-        <!-- Admin Trade Eingabe -->
-        <div id="input" class="tab-content">
-            <div class="form-section">
-                <h3>Trade eingeben</h3>
-                <div class="form-row">
-                    <div class="form-cell">
-                        <label>Datum</label>
-                        <input type="date" id="tradeDate">
-                    </div>
-                    <div class="form-cell">
-                        <label>Währungspaar</label>
-                        <select id="currencyPair">
-                            <option value="XAUUSD">XAU/USD (Gold)</option>
-                            <option value="BTCUSD">BTC/USD (Bitcoin)</option>
-                            <option value="EURUSD">EUR/USD</option>
-                            <option value="GBPUSD">GBP/USD</option>
-                            <option value="USDJPY">USD/JPY</option>
-                            <option value="USDCAD">USD/CAD</option>
-                        </select>
-                    </div>
-                    <div class="form-cell">
-                        <label>Einstiegspreis</label>
-                        <input type="number" id="entryPrice" step="0.01" placeholder="2150.50">
-                    </div>
-                    <div class="form-cell">
-                        <label>Ausstiegspreis</label>
-                        <input type="number" id="exitPrice" step="0.01" placeholder="2153.20">
-                    </div>
-                    <div class="form-cell">
-                        <label>Trade Richtung</label>
-                        <select id="tradeDirection">
-                            <option value="Long">Long (Buy)</option>
-                            <option value="Short">Short (Sell)</option>
-                        </select>
-                    </div>
-                    <div class="form-cell">
-                        <label>Stop Loss (Pips)</label>
-                        <input type="number" id="stopLossPips" step="1" value="50" placeholder="50">
-                    </div>
+        <!-- Trade Form (Admin only) -->
+        <div id="tradeForm" class="form-section">
+            <h2>Neuen Trade eingeben</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Datum</label>
+                    <input type="date" id="tradeDate">
                 </div>
-                <button class="btn" onclick="addTrade()">Trade hinzufügen</button>
-            </div>
-            
-            <div class="form-section">
-                <h3>🗂️ Trade Verwaltung</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Datum</th>
-                            <th>KW</th>
-                            <th>Paar</th>
-                            <th>Typ</th>
-                            <th>Einstieg</th>
-                            <th>Ausstieg</th>
-                            <th>Stop Loss</th>
-                            <th>Pips</th>
-                            <th>Ergebnis</th>
-                            <th>Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminTradesTable">
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- Admin Verwaltung -->
-        <div id="manage" class="tab-content">
-            <div class="form-section">
-                <h3>👥 Admin Verwaltung</h3>
-                <div style="margin-bottom: 20px;">
-                    <label for="newAdminEmail">Neue Admin E-Mail:</label>
-                    <input type="email" id="newAdminEmail" placeholder="admin@example.com" style="margin: 0 10px; padding: 8px;">
-                    <button class="btn" onclick="addAdmin()">Admin hinzufügen</button>
+                <div class="form-group">
+                    <label>Währungspaar</label>
+                    <select id="currencyPair">
+                        <option value="XAUUSD">XAU/USD (Gold)</option>
+                        <option value="BTCUSD">BTC/USD</option>
+                        <option value="EURUSD">EUR/USD</option>
+                    </select>
                 </div>
-                
-                <h4>Aktuelle Admins:</h4>
-                <div id="adminsList"></div>
+                <div class="form-group">
+                    <label>Einstiegspreis</label>
+                    <input type="number" id="entryPrice" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Ausstiegspreis</label>
+                    <input type="number" id="exitPrice" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Trade Richtung</label>
+                    <select id="tradeDirection">
+                        <option value="Long">Long</option>
+                        <option value="Short">Short</option>
+                    </select>
+                </div>
             </div>
+            <button class="btn" onclick="addTrade()">Trade hinzufügen</button>
         </div>
     </div>
 
     <script>
-        // Firebase Konfiguration
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyB3KSO9xSQiAc_FyJ2ywe7lPXitCjgy7Sc",
             authDomain: "mmfx-trading-performance.firebaseapp.com",
             projectId: "mmfx-trading-performance",
             storageBucket: "mmfx-trading-performance.firebasestorage.app",
             messagingSenderId: "893000519345",
-            appId: "1:893000519345:web:2b82add0a5f566a041dc90",
-            measurementId: "G-FECKCHL9E5"
+            appId: "1:893000519345:web:2b82add0a5f566a041dc90"
         };
 
-        // Firebase initialisieren
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
@@ -565,105 +256,76 @@
         let isAdmin = false;
         let trades = [];
 
-        // Auth State Observer
-        auth.onAuthStateChanged((user) => {
+        // Auth state observer
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('userSection').style.display = 'block';
-                document.getElementById('userName').textContent = `Angemeldet als: ${user.displayName || user.email}`;
+                document.getElementById('loginArea').classList.add('hidden');
+                document.getElementById('userArea').classList.remove('hidden');
+                document.getElementById('userName').textContent = user.displayName || user.email;
                 
-                checkAdminStatus(user.email);
+                // Check if user is admin
+                try {
+                    const adminDoc = await db.collection('admins').doc(user.email).get();
+                    isAdmin = adminDoc.exists;
+                } catch (error) {
+                    console.log('Admin check failed:', error);
+                    isAdmin = false;
+                }
             } else {
                 currentUser = null;
                 isAdmin = false;
-                document.getElementById('loginSection').style.display = 'block';
-                document.getElementById('userSection').style.display = 'none';
-                hideAdminElements();
+                document.getElementById('loginArea').classList.remove('hidden');
+                document.getElementById('userArea').classList.add('hidden');
+                document.getElementById('tradeForm').classList.remove('active');
             }
             
             loadTrades();
         });
 
-        // Google Sign In
-        function signInWithGoogle() {
+        // Login function
+        function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch((error) => {
-                console.error('Fehler beim Anmelden:', error);
-                alert('Fehler beim Anmelden: ' + error.message);
+            auth.signInWithPopup(provider).catch(error => {
+                alert('Login fehlgeschlagen: ' + error.message);
             });
         }
 
-        // Sign Out
-        function signOut() {
+        // Logout function
+        function logout() {
             auth.signOut();
         }
 
-        // Admin Status prüfen
-        async function checkAdminStatus(email) {
-            try {
-                const adminDoc = await db.collection('admins').doc(email).get();
-                isAdmin = adminDoc.exists;
-                
-                if (isAdmin) {
-                    showAdminElements();
-                } else {
-                    hideAdminElements();
-                }
-            } catch (error) {
-                console.error('Fehler beim Prüfen des Admin-Status:', error);
-                isAdmin = false;
-                hideAdminElements();
+        // Show trade form
+        function showTradeForm() {
+            if (!isAdmin) {
+                alert('Nur Admins können Trades eingeben!');
+                return;
             }
+            document.getElementById('tradeForm').classList.add('active');
+            document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
         }
 
-        function showAdminElements() {
-            document.querySelectorAll('.admin-only').forEach(el => {
-                el.style.display = 'block';
-            });
-        }
-
-        function hideAdminElements() {
-            document.querySelectorAll('.admin-only').forEach(el => {
-                el.style.display = 'none';
-            });
-            // Zurück zur öffentlichen Ansicht
-            switchTab('public');
-        }
-
-        // Tab Navigation
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        // Trades laden
+        // Load trades
         async function loadTrades() {
             try {
                 const snapshot = await db.collection('trades').orderBy('date', 'desc').get();
                 trades = [];
                 
-                snapshot.forEach((doc) => {
+                snapshot.forEach(doc => {
                     trades.push({ id: doc.id, ...doc.data() });
                 });
                 
-                updateAllDisplays();
+                updateDashboard();
             } catch (error) {
-                console.error('Fehler beim Laden der Trades:', error);
+                console.log('Loading trades failed:', error);
             }
         }
 
-        // Trade hinzufügen
+        // Add trade
         async function addTrade() {
             if (!isAdmin) {
-                alert('Nur Admins können Trades hinzufügen!');
+                alert('Nur Admins können Trades eingeben!');
                 return;
             }
 
@@ -672,25 +334,21 @@
             const entryPrice = parseFloat(document.getElementById('entryPrice').value);
             const exitPrice = parseFloat(document.getElementById('exitPrice').value);
             const tradeDirection = document.getElementById('tradeDirection').value;
-            const stopLossPips = parseFloat(document.getElementById('stopLossPips').value);
             
-            if (!date || !entryPrice || !exitPrice || !stopLossPips) {
+            if (!date || !entryPrice || !exitPrice) {
                 alert('Bitte alle Felder ausfüllen!');
                 return;
             }
             
             const pips = calculatePips(entryPrice, exitPrice, currencyPair, tradeDirection);
-            const weekNumber = getWeekNumber(date);
             const isWin = pips > 0;
             
             const trade = {
                 date: date,
-                week: weekNumber,
                 currencyPair: currencyPair,
                 tradeType: tradeDirection,
                 entryPrice: entryPrice,
                 exitPrice: exitPrice,
-                stopLossPips: stopLossPips,
                 pips: pips,
                 isWin: isWin,
                 addedBy: currentUser.email,
@@ -699,115 +357,19 @@
             
             try {
                 await db.collection('trades').add(trade);
-                clearForm();
-                loadTrades();
                 
-                const icon = isWin ? '✅' : '❌';
-                const direction = tradeDirection === 'Long' ? '📈' : '📉';
-                alert(`${icon} Trade hinzugefügt!\n${direction} ${tradeDirection} ${currencyPair}\n${pips > 0 ? '+' : ''}${pips} Pips`);
+                // Clear form
+                document.getElementById('entryPrice').value = '';
+                document.getElementById('exitPrice').value = '';
+                
+                alert('Trade hinzugefügt: ' + (isWin ? '+' : '') + pips + ' Pips');
+                loadTrades();
             } catch (error) {
-                console.error('Fehler beim Hinzufügen des Trades:', error);
                 alert('Fehler beim Speichern: ' + error.message);
             }
         }
 
-        // Trade löschen
-        async function deleteTrade(id) {
-            if (!isAdmin) {
-                alert('Nur Admins können Trades löschen!');
-                return;
-            }
-
-            if (confirm('Trade wirklich löschen?')) {
-                try {
-                    await db.collection('trades').doc(id).delete();
-                    loadTrades();
-                } catch (error) {
-                    console.error('Fehler beim Löschen:', error);
-                    alert('Fehler beim Löschen: ' + error.message);
-                }
-            }
-        }
-
-        // Admin hinzufügen
-        async function addAdmin() {
-            if (!isAdmin) {
-                alert('Nur Admins können andere Admins hinzufügen!');
-                return;
-            }
-
-            const email = document.getElementById('newAdminEmail').value.trim();
-            if (!email) {
-                alert('Bitte geben Sie eine E-Mail-Adresse ein!');
-                return;
-            }
-
-            try {
-                await db.collection('admins').doc(email).set({
-                    email: email,
-                    addedBy: currentUser.email,
-                    addedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                
-                document.getElementById('newAdminEmail').value = '';
-                loadAdmins();
-                alert(`${email} wurde als Admin hinzugefügt!`);
-            } catch (error) {
-                console.error('Fehler beim Hinzufügen des Admins:', error);
-                alert('Fehler: ' + error.message);
-            }
-        }
-
-        // Admins laden
-        async function loadAdmins() {
-            if (!isAdmin) return;
-
-            try {
-                const snapshot = await db.collection('admins').get();
-                const adminsList = document.getElementById('adminsList');
-                adminsList.innerHTML = '';
-                
-                snapshot.forEach((doc) => {
-                    const admin = doc.data();
-                    const adminDiv = document.createElement('div');
-                    adminDiv.style.cssText = 'padding: 10px; margin: 5px 0; background: #f0f0f0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;';
-                    adminDiv.innerHTML = `
-                        <span>${admin.email}</span>
-                        <button onclick="removeAdmin('${doc.id}')" style="background: #e53e3e; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">Entfernen</button>
-                    `;
-                    adminsList.appendChild(adminDiv);
-                });
-            } catch (error) {
-                console.error('Fehler beim Laden der Admins:', error);
-            }
-        }
-
-        // Admin entfernen
-        async function removeAdmin(email) {
-            if (!isAdmin) return;
-            
-            if (email === currentUser.email) {
-                alert('Sie können sich nicht selbst als Admin entfernen!');
-                return;
-            }
-
-            if (confirm(`Admin ${email} wirklich entfernen?`)) {
-                try {
-                    await db.collection('admins').doc(email).delete();
-                    loadAdmins();
-                } catch (error) {
-                    console.error('Fehler beim Entfernen des Admins:', error);
-                }
-            }
-        }
-
-        // Hilfsfunktionen
-        function getWeekNumber(date) {
-            const d = new Date(date);
-            const yearStart = new Date(d.getFullYear(), 0, 1);
-            return Math.ceil((((d - yearStart) / 86400000) + yearStart.getDay() + 1) / 7);
-        }
-        
+        // Calculate pips
         function calculatePips(entryPrice, exitPrice, currencyPair, tradeDirection) {
             let priceDiff;
             
@@ -825,223 +387,41 @@
             return Math.round(priceDiff * 10000 * 100) / 100;
         }
 
-        function clearForm() {
-            document.getElementById('tradeDate').value = new Date().toISOString().split('T')[0];
-            document.getElementById('entryPrice').value = '';
-            document.getElementById('exitPrice').value = '';
-            document.getElementById('stopLossPips').value = '50';
-        }
-
-        function updateAllDisplays() {
-            updateKPIs();
-            updateTradesTables();
-            updateWeeklyAnalysis();
-            updateProfitCalculation();
-            
-            if (isAdmin) {
-                loadAdmins();
-            }
-        }
-
-        function updateKPIs() {
+        // Update dashboard
+        function updateDashboard() {
             const totalTrades = trades.length;
             const winningTrades = trades.filter(trade => trade.isWin).length;
             const hitRate = totalTrades > 0 ? ((winningTrades / totalTrades) * 100).toFixed(1) : 0;
             const totalPips = trades.reduce((sum, trade) => sum + trade.pips, 0).toFixed(2);
-            const avgPips = totalTrades > 0 ? (totalPips / totalTrades).toFixed(2) : 0;
-            const bestTrade = trades.length > 0 ? Math.max(...trades.map(t => t.pips)).toFixed(2) : 0;
             
             document.getElementById('totalTrades').textContent = totalTrades;
-            document.getElementById('totalWins').textContent = winningTrades;
-            document.getElementById('totalHitRate').textContent = hitRate + '%';
+            document.getElementById('winningTrades').textContent = winningTrades;
+            document.getElementById('hitRate').textContent = hitRate + '%';
             document.getElementById('totalPips').textContent = totalPips;
-            document.getElementById('avgPips').textContent = avgPips;
-            document.getElementById('bestTrade').textContent = bestTrade;
-        }
-
-        function updateTradesTables() {
-            updatePublicTradesTable();
-            if (isAdmin) {
-                updateAdminTradesTable();
-            }
-        }
-
-        function updatePublicTradesTable() {
-            const tbody = document.getElementById('publicTradesTable');
+            
+            // Update table
+            const tbody = document.getElementById('tradesTable');
             tbody.innerHTML = '';
             
             trades.forEach(trade => {
                 const row = document.createElement('tr');
-                const icon = trade.tradeType === 'Long' ? '📈' : '📉';
                 const resultClass = trade.isWin ? 'profit' : 'loss';
-                const resultText = trade.isWin ? 'Gewinn' : 'Verlust';
                 
                 row.innerHTML = `
                     <td>${new Date(trade.date).toLocaleDateString('de-DE')}</td>
-                    <td>KW ${trade.week}</td>
                     <td>${trade.currencyPair}</td>
-                    <td>${icon} ${trade.tradeType}</td>
+                    <td>${trade.tradeType}</td>
                     <td>${trade.entryPrice.toFixed(2)}</td>
                     <td>${trade.exitPrice.toFixed(2)}</td>
-                    <td>${trade.stopLossPips}</td>
                     <td class="${resultClass}">${trade.pips > 0 ? '+' : ''}${trade.pips}</td>
-                    <td class="${resultClass}">${resultText}</td>
+                    <td class="${resultClass}">${trade.isWin ? 'Gewinn' : 'Verlust'}</td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        function updateAdminTradesTable() {
-            const tbody = document.getElementById('adminTradesTable');
-            tbody.innerHTML = '';
-            
-            trades.forEach(trade => {
-                const row = document.createElement('tr');
-                const icon = trade.tradeType === 'Long' ? '📈' : '📉';
-                const resultClass = trade.isWin ? 'profit' : 'loss';
-                const resultText = trade.isWin ? 'Gewinn' : 'Verlust';
-                
-                row.innerHTML = `
-                    <td>${new Date(trade.date).toLocaleDateString('de-DE')}</td>
-                    <td>KW ${trade.week}</td>
-                    <td>${trade.currencyPair}</td>
-                    <td>${icon} ${trade.tradeType}</td>
-                    <td>${trade.entryPrice.toFixed(2)}</td>
-                    <td>${trade.exitPrice.toFixed(2)}</td>
-                    <td>${trade.stopLossPips}</td>
-                    <td class="${resultClass}">${trade.pips > 0 ? '+' : ''}${trade.pips}</td>
-                    <td class="${resultClass}">${resultText}</td>
-                    <td><button class="delete-btn" onclick="deleteTrade('${trade.id}')">Löschen</button></td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function updateWeeklyAnalysis() {
-            const weeklyData = {};
-            trades.forEach(trade => {
-                const weekKey = `${new Date(trade.date).getFullYear()}-W${trade.week}`;
-                if (!weeklyData[weekKey]) {
-                    weeklyData[weekKey] = {
-                        week: trade.week,
-                        year: new Date(trade.date).getFullYear(),
-                        totalTrades: 0,
-                        winningTrades: 0,
-                        totalPips: 0
-                    };
-                }
-                weeklyData[weekKey].totalTrades++;
-                if (trade.isWin) weeklyData[weekKey].winningTrades++;
-                weeklyData[weekKey].totalPips += trade.pips;
-            });
-            
-            const weeklyDiv = document.getElementById('weeklyAnalysisPublic');
-            weeklyDiv.innerHTML = '<div class="form-section"><h3>📅 Wochen-Analyse</h3></div>';
-            
-            Object.keys(weeklyData).sort().forEach(weekKey => {
-                const data = weeklyData[weekKey];
-                const hitRate = ((data.winningTrades / data.totalTrades) * 100).toFixed(1);
-                
-                const weekSection = document.createElement('div');
-                weekSection.className = 'week-section';
-                weekSection.innerHTML = `
-                    <h4>${data.year} - KW ${data.week}</h4>
-                    <div class="kpi-row">
-                        <div class="kpi-cell">
-                            <div class="kpi-card">
-                                <h4>Trades</h4>
-                                <div class="value">${data.totalTrades}</div>
-                            </div>
-                        </div>
-                        <div class="kpi-cell">
-                            <div class="kpi-card">
-                                <h4>Hit Rate</h4>
-                                <div class="value">${hitRate}%</div>
-                            </div>
-                        </div>
-                        <div class="kpi-cell">
-                            <div class="kpi-card">
-                                <h4>Pips</h4>
-                                <div class="value">${data.totalPips.toFixed(2)}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                weeklyDiv.appendChild(weekSection);
-            });
-        }
-
-        function updateProfitCalculation() {
-            const accountSizes = [250, 500, 1000, 2000, 5000];
-            const tbody = document.getElementById('profitTablePublic');
-            tbody.innerHTML = '';
-            
-            accountSizes.forEach(accountSize => {
-                const riskAmount = accountSize * 0.01; // 1% Risk
-                let totalProfit = 0;
-                
-                trades.forEach(trade => {
-                    const tradeRisk = riskAmount;
-                    const pipProfit = trade.pips;
-                    const stopLoss = trade.stopLossPips;
-                    
-                    const tradeProfit = (pipProfit / stopLoss) * tradeRisk;
-                    totalProfit += tradeProfit;
-                });
-                
-                const newBalance = accountSize + totalProfit;
-                const roi = ((totalProfit / accountSize) * 100).toFixed(2);
-                
-                const row = document.createElement('tr');
-                const profitClass = totalProfit >= 0 ? 'profit' : 'loss';
-                
-                row.innerHTML = `
-                    <td>${accountSize}€</td>
-                    <td>${riskAmount.toFixed(2)}€</td>
-                    <td class="${profitClass}">${totalProfit >= 0 ? '+' : ''}${totalProfit.toFixed(2)}€</td>
-                    <td>${newBalance.toFixed(2)}€</td>
-                    <td class="${profitClass}">${roi >= 0 ? '+' : ''}${roi}%</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        function exportToExcel() {
-            if (trades.length === 0) {
-                alert('Keine Trades zum Exportieren vorhanden!');
-                return;
-            }
-            
-            const tradesData = trades.map(trade => ({
-                'Datum': new Date(trade.date).toLocaleDateString('de-DE'),
-                'KW': trade.week,
-                'Jahr': new Date(trade.date).getFullYear(),
-                'Währungspaar': trade.currencyPair,
-                'Trade-Typ': trade.tradeType,
-                'Einstiegspreis': trade.entryPrice,
-                'Ausstiegspreis': trade.exitPrice,
-                'Stop-Loss': trade.stopLossPips,
-                'Pips': trade.pips,
-                'Gewinn/Verlust': trade.isWin ? 'Gewinn' : 'Verlust'
-            }));
-            
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.json_to_sheet(tradesData);
-            XLSX.utils.book_append_sheet(wb, ws, "MomentumMarkets_Trades");
-            
-            const fileName = `MomentumMarketsFX_${new Date().toISOString().split('T')[0]}.xlsx`;
-            XLSX.writeFile(wb, fileName);
-            
-            alert(`✅ Excel-Datei "${fileName}" wurde erstellt!`);
-        }
-
-        // Initialization
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            // Set current date
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('tradeDate').value = today;
-            
-            // Load initial data
             loadTrades();
         });
     </script>
